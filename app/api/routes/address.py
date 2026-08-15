@@ -1,5 +1,12 @@
 from fastapi import APIRouter
+from app.schemas.address import (
+    NavigationRequest,
+    NavigationResponse,
+)
 
+from app.services.navigation_resolver import (
+    NavigationResolver,
+)
 from app.nlp.normalizer import normalize_arabic_address
 from app.nlp.parser import parse_descriptive_address
 
@@ -147,4 +154,66 @@ def resolve_address(
         routes=routing[
             "routes"
         ],
+    )
+@router.post(
+    "/navigate",
+    response_model=NavigationResponse,
+)
+def navigate_address(
+    payload: NavigationRequest,
+) -> NavigationResponse:
+
+    resolver = NavigationResolver(
+        radius_meters=1500,
+    )
+
+    result = resolver.resolve(
+        payload.address
+    )
+
+    return NavigationResponse(
+        status=result.get(
+            "status",
+            "unknown",
+        ),
+
+        raw_address=result.get(
+            "raw_address",
+            payload.address,
+        ),
+
+        administrative_area=result.get(
+            "administrative_area"
+        ),
+
+        anchor=result.get(
+            "anchor"
+        ),
+
+        instructions=result.get(
+            "instructions",
+            [],
+        ),
+
+        validation_landmarks=result.get(
+            "validation_landmarks",
+            [],
+        ),
+
+        final_destination=result.get(
+            "final_destination"
+        ),
+
+        final_confidence=result.get(
+            "final_confidence"
+        ),
+
+        ambiguous=result.get(
+            "ambiguous",
+            False,
+        ),
+
+        best_candidate=result.get(
+            "best_candidate"
+        ),
     )

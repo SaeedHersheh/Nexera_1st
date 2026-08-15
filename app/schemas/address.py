@@ -37,3 +37,37 @@ class AddressResolveResponse(BaseModel):
     summary: dict[str, Any]
     recommended_route: dict[str, Any] | None
     routes: list[dict[str, Any]]
+class NavigationRequest(BaseModel):
+    address: str = Field(
+        min_length=2,
+        max_length=2000,
+    )
+
+
+class NavigationResponse(BaseModel):
+    status: str
+    raw_address: str
+
+    administrative_area: str | None = None
+
+    anchor: dict[str, Any] | None = None
+
+    instructions: list[dict[str, Any]] = []
+
+    validation_landmarks: list[
+        dict[str, Any]
+    ] = []
+
+    final_destination: (
+        dict[str, Any] | None
+    ) = None
+
+    final_confidence: (
+        float | None
+    ) = None
+
+    ambiguous: bool = False
+
+    best_candidate: (
+        dict[str, Any] | None
+    ) = None

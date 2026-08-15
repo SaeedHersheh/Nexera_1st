@@ -202,10 +202,11 @@ def _extract_landmarks(text: str) -> list[dict]:
 
         landmarks.append(
             {
-                "text": landmark_text,
-                "type": landmark_type,
-                "relation": _relation_before(text, landmark_text),
-                "confidence": 0.85,
+                 "text": landmark_text,
+        "type": landmark_type,
+        "relation": _relation_before(text, landmark_text),
+        "position": text.find(landmark_text),
+        "confidence": 0.85,
             }
         )
 
@@ -240,6 +241,7 @@ def _extract_directions(text: str) -> list[dict]:
                 "instruction": "turn",
                 "order": ORDINAL_MAP.get(ordinal_text),
                 "direction": normalized_direction,
+                "position": match.start(),
                 "raw_text": match.group(0),
                 "confidence": 0.90,
             }
@@ -339,6 +341,7 @@ def parse_descriptive_address(raw_text: str) -> dict:
             landmark["longitude"] = None
 
     directions = _extract_directions(text)
+    distances = _extract_distances(text)
     building = _extract_building(text)
 
     detected_parts = 0
@@ -371,4 +374,28 @@ def parse_descriptive_address(raw_text: str) -> dict:
         "building": building,
         "unresolved_terms": [],
         "overall_confidence": round(confidence, 2),
+        "distances": distances,
     }
+def _extract_distances(text: str) -> list[dict]:
+    distances = []
+
+    patterns = [
+        r"(?:امشي|امش|سر|روح|كمل|بعدها)?\s*(\d+)\s*(?:متر|م)",
+        r"(?:مسافة|حوالي)\s*(\d+)\s*(?:متر|م)",
+    ]
+
+    for pattern in patterns:
+        for match in re.finditer(pattern, text):
+            meters = int(match.group(1))
+
+            distances.append(
+                {
+                    "instruction": "distance",
+                    "meters": meters,
+                    "raw_text": match.group(0).strip(),
+                    "position": match.start(),
+                    "confidence": 0.90,
+                }
+            )
+
+    return distances
