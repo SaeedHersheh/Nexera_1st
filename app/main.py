@@ -1,13 +1,8 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes.address import (
-    router as address_router,
-)
-
-from app.api.routes.intelligence import (
-    router as intelligence_router,
-)
-
+from app.api.routes.address import router as address_router
+from app.api.routes.intelligence import router as intelligence_router
 from app.core.config import settings
 
 
@@ -18,6 +13,15 @@ app = FastAPI(
         "Palestinian descriptive-address "
         "and navigation intelligence engine"
     ),
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
