@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: address_intelligence_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: address_intelligence
+      POSTGRES_USER: address_user
+      POSTGRES_PASSWORD: address_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U address_user -d address_intelligence"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
